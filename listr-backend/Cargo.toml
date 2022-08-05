@@ -1,0 +1,24 @@
+[package]
+name = "listr-backend"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[[bin]]
+name = "listr_backend"
+path = "src/backend.rs"
+
+[dependencies]
+diesel = { version = "1.4.4", features = ["postgres"] }
+actix-web = { version = "4", features = ["openssl"] }
+openssl = { version = "^0.10", features = ["v110"] }
+oauth2 = "^4.2"
+jsonwebtokens-cognito = "^0.1"
+actix-web-lab = "^0.16"
+env_logger = "0.9.0"
+serde = "1.0.136"
+serde_json = "1.0.78"
+log = "^0.4"
+futures-util = "^0.3"
+listr-common = { path = "../listr-common" }

@@ -1,0 +1,6 @@
+[workspace]
+members = [
+    "listr-backend",
+    "listr-frontend",
+    "listr-common",
+]

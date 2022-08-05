@@ -1,0 +1,2 @@
+[[proxy]]
+backend = "https://localhost:80/api/v1"
