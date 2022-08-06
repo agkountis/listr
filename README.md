@@ -1,4 +1,5 @@
 # Listr
+[![CI](https://github.com/agkountis/listr/actions/workflows/ci.yml/badge.svg)](https://github.com/agkountis/listr/actions/workflows/ci.yml)
 
 A list management full stack web app.
 
