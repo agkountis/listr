@@ -35,7 +35,9 @@ async fn main() -> std::io::Result<()> {
                     .service(get_lists)
                     .service(get_items)
                     .service(add_list_item)
-                    .service(remove_list_item),
+                    .service(remove_list_item)
+                    .service(create_list)
+                    .service(delete_list)
             )
             .service(Scope::new("auth").service(token))
             .service(
