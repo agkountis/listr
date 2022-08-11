@@ -10,6 +10,7 @@ table! {
     lists (id) {
         id -> Int4,
         name -> Varchar,
+        user_id -> Varchar,
     }
 }
 

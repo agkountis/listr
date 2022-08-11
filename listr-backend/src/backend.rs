@@ -4,8 +4,6 @@ extern crate diesel;
 mod api;
 mod db;
 mod middleware;
-mod models;
-mod schema;
 
 use crate::api::prelude::*;
 use crate::middleware::token_verifier::TokenVerifier;

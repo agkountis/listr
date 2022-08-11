@@ -1,5 +1,5 @@
 use actix_web::dev::{forward_ready, Service, ServiceRequest, ServiceResponse, Transform};
-use actix_web::error::ErrorNetworkAuthenticationRequired;
+use actix_web::error::{ErrorBadRequest, ErrorInternalServerError, ErrorNetworkAuthenticationRequired};
 use actix_web::Error;
 use actix_web_lab::__reexports::futures_util::future::LocalBoxFuture;
 use jsonwebtokens_cognito::KeySet;
@@ -42,26 +42,33 @@ where
     forward_ready!(service);
 
     fn call(&self, req: ServiceRequest) -> Self::Future {
-        let keyset =
-            KeySet::new("us-east-1", "us-east-1_AFyaKUc54").expect("Failed to create JWT keyset");
-
-        let verifier = keyset
-            .new_access_token_verifier(&["2k4mvc8v79o3b1vnvvmtgl36g6"])
-            .build()
-            .expect("Failed to build token verifier");
-
-        let auth_header = req
+        let headers = req
             .headers()
-            .get("Authorization")
-            .expect("No auth header.")
-            .to_str()
-            .expect("Handle this better...")
-            .to_string();
+            .clone();
 
-        let fut = self.service.call(req);
+        let future = self.service.call(req);
 
         Box::pin(async move {
-            let verified = keyset.verify(&auth_header, &verifier).await;
+            let headers = headers.clone();
+            let keyset =
+                KeySet::new("us-east-1", "us-east-1_AFyaKUc54")
+                    .map_err(|e| ErrorInternalServerError(format!("Failed to create JWT key set.\n{}", e)))?;
+
+            let verifier = keyset
+                .new_access_token_verifier(&["2k4mvc8v79o3b1vnvvmtgl36g6"])
+                .build()
+                .map_err(|e| ErrorInternalServerError(format!("Failed to build access token verifier.\n{}", e)))?;
+
+            let auth_header = headers
+                .get("Authorization")
+                .ok_or_else(|| ErrorBadRequest("No 'Authorization' header provided."))?;
+
+            let token = auth_header.to_str()
+                .map_err(|e| ErrorInternalServerError(e))?
+                .strip_prefix("Bearer ")
+                .ok_or_else(|| ErrorBadRequest("Token not prefixed with 'Bearer'."))?;
+
+            let verified = keyset.verify(&token, &verifier).await;
 
             if let Err(e) = verified {
                 error!("Token verification failed");
@@ -70,9 +77,7 @@ where
 
             info!("Token verified successfully");
 
-            let res = fut.await?;
-
-            Ok(res)
+            Ok(future.await?)
         })
     }
 }

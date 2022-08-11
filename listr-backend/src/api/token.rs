@@ -30,7 +30,7 @@ pub async fn token(body: Form<TokenBody>) -> Json<Oauth2StandardTokenResponse> {
     let client = BasicClient::new(
         ClientId::new(CLIENT_ID.to_string()),
         Some(ClientSecret::new(CLIENT_SECRET.to_string())),
-        AuthUrl::new("http://auth".to_string()).expect("Failed to create AuthUrl"),
+        AuthUrl::new("http://auth".to_string()).expect("Failed to create AuthUrl"), //Not used. Configured by AWS Cognito
         Some(TokenUrl::new(TOKEN_URL.to_string()).expect("Failed to create TokenUrl")),
     )
     .set_redirect_uri(RedirectUrl::new(req.redirect_uri).unwrap());

@@ -1,14 +1,13 @@
--- Your SQL goes here
 DROP TABLE IF EXISTS lists;
 DROP TABLE IF EXISTS items;
 
 CREATE TABLE lists(
-    id SERIAL PRIMARY KEY,
+    id SERIAL PRIMARY KEY NOT NULL,
     name VARCHAR(80) NOT NULL
 );
 
 CREATE TABLE items(
-    id SERIAL PRIMARY KEY,
-    list_id SERIAL REFERENCES lists(id),
+    id SERIAL PRIMARY KEY NOT NULL,
+    list_id SERIAL REFERENCES lists(id) NOT NULL,
     data VARCHAR(80) NOT NULL
 );
