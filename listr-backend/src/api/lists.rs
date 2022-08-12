@@ -3,14 +3,19 @@ use crate::db::models::{Item, List, NewItem, NewList};
 use actix_web::error::{ErrorBadRequest, ErrorInternalServerError};
 use actix_web::{delete, get, post, web, Error, HttpResponse, HttpRequest};
 use diesel::{insert_into, delete, EqAll, QueryDsl, RunQueryDsl};
-use listr_common::{AddListItemRequest, CreateListRequest, extract_user_from_token, ListItemResponse, ListWithItemsResponse};
+use listr_common::{AddListItemRequest, CreateListRequest, extract_user_from_bearer_token, ListItemResponse, ListWithItemsResponse};
 
 #[get("/lists")]
-pub async fn get_lists() -> Result<HttpResponse, Error> {
-    use crate::db::schema::lists::dsl::*;
+pub async fn get_lists(request: HttpRequest) -> Result<HttpResponse, Error> {
+    use crate::db::schema::lists;
     let connection = db::establish_connection();
 
-    let res_lists: Vec<List> = lists
+    // Safe to unwrap here. The token verifier middleware has already validated the existence of this
+    // header key/value.
+    let token = request.headers().get("Authorization").unwrap().to_str().unwrap();
+    let user = extract_user_from_bearer_token(token);
+
+    let res_lists: Vec<List> = lists::table.filter(lists::user_id.eq_all(user.sub))
         .load(&connection)
         .map_err(|e| ErrorInternalServerError(e))?;
 
@@ -59,7 +64,7 @@ async fn create_list(request: HttpRequest, payload: web::Json<CreateListRequest>
     // Safe to unwrap here. The token verifier middleware has already validated the existence of this
     // header key/value.
     let token = request.headers().get("Authorization").unwrap().to_str().unwrap();
-    let user = extract_user_from_token(token);
+    let user = extract_user_from_bearer_token(token);
     let list_name = &payload.name;
 
     insert_into(lists::table)

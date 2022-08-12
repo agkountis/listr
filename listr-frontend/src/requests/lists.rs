@@ -1,6 +1,6 @@
 use gloo_net::http::Request;
 use log::{error, info};
-use listr_common::{AddListItemRequest, ListResponse, ListWithItemsResponse};
+use listr_common::{AddListItemRequest, CreateListRequest, ListResponse, ListWithItemsResponse};
 use crate::requests::BACKEND_URL;
 
 pub async fn fetch_lists(token: &str) -> Vec<ListResponse> {
@@ -13,6 +13,26 @@ pub async fn fetch_lists(token: &str) -> Vec<ListResponse> {
         .json()
         .await
         .unwrap()
+}
+
+pub async fn create_list(list_name: &str, token: &str) {
+    Request::post(&format!("{}/api/v1/lists/create", BACKEND_URL))
+        .header("Authorization", &format!("Bearer {}", token))
+        .json(&CreateListRequest {
+            name: list_name.to_string()
+        })
+        .expect("JSON serialization failed")
+        .send()
+        .await
+        .unwrap();
+}
+
+pub async fn delete_list(list_id: i32, token: &str) {
+    Request::delete(&format!("{}/api/v1/lists/delete/{}", BACKEND_URL, list_id))
+        .header("Authorization", &format!("Bearer {}", token))
+        .send()
+        .await
+        .unwrap();
 }
 
 pub async fn fetch_list_items(list_id: i32, token: &str) -> ListWithItemsResponse {

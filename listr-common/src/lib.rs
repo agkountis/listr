@@ -58,3 +58,10 @@ pub fn extract_user_from_token(access_token: &str) -> User {
         sub,
     }
 }
+
+pub fn extract_user_from_bearer_token(access_token: &str) -> User {
+    // We can safely unwrap here, the token verifier ensures that
+    // all tokens are prefixed by 'Bearer ' at this point.
+    let token = access_token.strip_prefix("Bearer ").unwrap();
+    extract_user_from_token(token)
+}

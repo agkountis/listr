@@ -6,6 +6,7 @@ use yew_router::prelude::*;
 use crate::routes::Route;
 use listr_common::ListWithItemsResponse;
 use crate::components::list::list_item::*;
+use crate::components::input::*;
 use crate::requests::lists::{add_list_item, fetch_list_items};
 
 #[derive(PartialEq, Clone, Copy, Properties)]
@@ -66,28 +67,19 @@ pub fn list(props: &ListProps) -> Html {
     });
 
     let add_item = {
-        let input_ref = input_ref.clone();
         let do_refresh = do_refresh.clone();
         let token = token.clone();
-        Callback::from(move |_| {
+        Callback::from(move |item_data| {
             let token = token.clone();
+            let do_refresh = do_refresh.clone();
 
             if let Some(token) = (&*token).clone() {
-                // Cast DOM node ref to HtmlInputElement to access the input's value
-                if let Some(input) = input_ref.cast::<HtmlInputElement>() {
-                    let item_data = input.value();
-                    let do_refresh = do_refresh.clone();
-
-                    wasm_bindgen_futures::spawn_local(async move {
-                        // let credentials = oauth_context.unwrap();
-                        // let token = credentials.access_token().unwrap();
-                        add_list_item(list_id, item_data, &token).await;
-                        do_refresh.emit(());
-                    });
-
-                    // Remove text from the input after successful item creation.
-                    input.set_value("")
-                }
+                wasm_bindgen_futures::spawn_local(async move {
+                    // let credentials = oauth_context.unwrap();
+                    // let token = credentials.access_token().unwrap();
+                    add_list_item(list_id, item_data, &token).await;
+                    do_refresh.emit(());
+                });
             }
         })
     };
@@ -96,8 +88,7 @@ pub fn list(props: &ListProps) -> Html {
         <>
             <Authenticated>
                 <h1>{ format!("{}", list_with_items.name) }</h1>
-                <input type="text" ref={input_ref}/>
-                <button onclick={add_item}>{"Add Item"}</button>
+                <ActionInput input_type="text" action_name="Add Item" action={add_item} />
                 <br/><br/>
                 <ListItems items={list_with_items.items.clone()} refresh={do_refresh}/><br/>
                 <Link<Route> to={Route::Lists}>{"Back"}</Link<Route>>
